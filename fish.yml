@@ -1,0 +1,13 @@
+---
+- name: fish
+  hosts: all
+  gather_facts: no
+  vars:
+
+  tasks:
+  - debug:
+      msg: fish
+
+
+...
+
