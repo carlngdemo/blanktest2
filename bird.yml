@@ -1,0 +1,13 @@
+---
+- name: bird
+  hosts: all
+  gather_facts: no
+  vars:
+
+  tasks:
+  - debug:
+      msg: bird
+
+
+...
+
