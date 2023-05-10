@@ -1,0 +1,126 @@
+##
+## Author: Carl Ng
+## Created on: April 22, 2023
+##
+
+---
+
+- name: block (CONTROL HOST). save output to file
+  block:
+    - name: blockinfile (CONTROL HOST). save file deletion status to file {{ outfile_file_deletion_report }}
+      blockinfile:
+        state: present
+        insertafter: EOF
+        dest: "{{ outfile_file_deletion_report }}"
+        content: |
+          {{ INFO_DATA }}
+        marker: "# {mark} {{ inventory_hostname}}_file_deletion_report"
+        create: yes
+
+    - name: lineinfile (CONTROL HOST). Remove marker lines from file {{ outfile_file_deletion_report }}
+      lineinfile:
+        state: absent
+        path: "{{ outfile_file_deletion_report }}"
+        regexp: '{{ inventory_hostname}}_file_deletion_report$'
+
+
+    - name: blockinfile (CONTROL HOST). save disk usage to file {{ outfile_disk_usage_report }}
+      blockinfile:
+        state: present
+        insertafter: EOF
+        dest: "{{ outfile_disk_usage_report }}"
+        content: |
+          {{ disk_usage_before_cleanup.stdout }}
+          {{ disk_usage_after_cleanup.stdout }}
+        marker: "# {mark} {{ inventory_hostname}}_disk_usage_report"
+        create: yes
+
+    - name: lineinfile (CONTROL HOST). Remove marker lines from file {{ outfile_disk_usage_report }}
+      lineinfile:
+        state: absent
+        path: "{{ outfile_disk_usage_report }}"
+        regexp: '{{ inventory_hostname}}_disk_usage_report$'
+
+  become: no
+  delegate_to: localhost
+##^^ End of - name: block (CONTROL HOST). save output to file
+
+
+## This includes delegate_to: localhost and run_once: yes at the end of block
+- name: block (CONTROL HOST). send email
+  block:
+    - name: "set_fact (CONTROL HOST) run_once: yes. Populate MAIL_BODY"
+      set_fact:
+        MAIL_BODY: |
+          Ansible Job ID {{ tower_job_id | default('not available') }}
+          Total host count {{ ansible_play_hosts_all | length }}
+          Unreachable host count {{ ansible_play_hosts_all | difference(ansible_play_hosts) | length}}
+          Reachable host count {{ ansible_play_hosts | length }}
+
+          Unreachable host(s)
+          {{ ANSIBLE_PLAY_HOSTS_UNREACHABLE }}
+          Reachable host(s)
+          {{ ANSIBLE_PLAY_HOSTS_REACHABLE }}
+          disk usage report
+          {{ lookup('file', outfile_disk_usage_report) }}
+
+    - name: "mail (CONTROL HOST). Send email to {{ MAIL_TO }}."
+      delegate_to: localhost
+      mail:
+        host: "{{ MAIL_SMTPHOST }}"
+        from: "{{ MAIL_FROM }}"
+        to: "{{ MAIL_TO }}"
+        subject: "{{ MAIL_SUBJECT }}"
+        body: "{{ MAIL_BODY }}"
+        #body: "{{ lookup('file', '/tmp/file.txt') }}"
+        #body: "{{ lookup('file', file_path_variable) }}"
+        attach:
+          - "{{ outfile_disk_usage_report }}"
+          - "{{ outfile_file_deletion_report }}"
+      run_once: yes
+      tags:
+        - YES_SEND_MAIL
+
+  rescue:
+
+    - name: resecue. block. debug (CONTROL HOST). Display variables to help trouble shooting
+      block:
+#        - debug:
+#            var: MAIL_SMTPHOST
+#        - debug:
+#            var: MAIL_FROM
+#        - debug:
+#            var: MAIL_TO
+#        - debug:
+#            var: MAIL_SUBJECT
+        - debug:
+            var: MAIL_BODY
+        - debug:
+            var: control_host_tmp_dir
+
+        - name: "blockinfile (CONTROL HOST). mail_body debug to output file {{ outfile_mail_body_debug }}"
+          blockinfile:
+            state: present
+            insertafter: EOF
+            dest: "{{ outfile_mail_body_debug }}"
+            content: |
+              {{ MAIL_BODY }}
+            marker: "# {mark} {{ inventory_hostname}}_mail_body_debug"
+            create: yes
+
+        - name: lineinfile (CONTROL HOST). Remove marker lines from file {{ outfile_mail_body_debug }}"
+          lineinfile:
+            state: absent
+            path: "{{ outfile_mail_body_debug }}"
+            regexp: '{{ inventory_hostname}}_mail_body_debug$'
+
+    ####^^^^ End of "resecue. block. debug (CONTROL HOST). Display variables to help trouble shooting"
+
+
+  delegate_to: localhost
+  run_once: yes
+##^^ End of - name: block (CONTROL HOST). send email
+
+
+...
+

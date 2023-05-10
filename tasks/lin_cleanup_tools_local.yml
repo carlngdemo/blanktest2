@@ -1,0 +1,20 @@
+---
+
+##
+## WARNING: This runs arbitrary commands
+##
+
+    - name: Linux (cleanup tool local). shell. run cleanup tool {{ item.cmd }} {{ item.arg | default('') }}
+      shell: "{{ item.cmd }} {{ item.arg | default('') }}"
+      register: file_op_result
+      ignore_errors: yes
+    #- debug:
+    #    var: file_op_result
+
+    - name: Linux (cleanup tool local). set_fact Add to INFO_DATA. cleanup_tool_local result
+      set_fact:
+        INFO_DATA: "{{ INFO_DATA }}\n{{ inventory_hostname }},reachable,{{ item.cmd }} {{ item.arg | default('') }},exited,{{ file_op_result.failed }},{{ file_op_result.rc }},\"{{ file_op_result.stdout_lines | flatten }} {{ file_op_result.stderr_lines | flatten }}\""
+      when: MAIL_TO is defined
+
+...
+

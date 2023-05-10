@@ -1,0 +1,64 @@
+##
+## Author: Carl Ng
+## Created on: March 30, 2023
+##
+
+---
+
+## These are examples only.
+## Variables should be defined with inventory to reflect actual server files/directories to delete
+##
+## Please sort real file/directory paths alphabetically for ease of lookup
+
+##
+## WARNING: This runs arbitrary commands
+##
+## Tools that know how to cleanup and what to delete
+## cmd is required
+## arg(ument) is optional
+a_lin_cleanup_tools_local:
+  - cmd: nosuch_a_cleanuptool
+    #arg:
+  - cmd: hostname
+    #arg:
+  - cmd: date
+    arg: +%Y%m%d_%H%M%S
+  ## Find files that are older than 366 days and match patter "nosuch_file*", then delete
+  - cmd: find /nosuch_a_dir_to_find -mtime +366 -name "nosuch_file*" -exec rm {} \;
+    #arg:
+  - cmd: find /var/log -mtime +3660 -name "spooler-*" | wc
+    #arg:
+  ## Delete 10 year old "spooler-*" log files
+  - cmd: find /var/log -mtime +3660 -name "spooler-*" -exec rm {} \;
+    #arg:
+a_win_cleanup_tools_local:
+  - cmd: nosuch_a_cleanuptool
+    #arg:
+  - cmd: hostname
+    #arg:
+  - cmd: Get-Date
+    arg: ""
+  ## Find files that are older than 366 days and match patter "nosuch_file*", then delete
+  - cmd: (Get-ChildItem -Path C:\nosuch_a_dir_to_find\ -Filter nosuch_file* | ? {$_.LastWriteTime -lt (Get-Date).AddDays(-366) -and -not $_.PSIsContainer} | Remove-Item | Out-String).trim()
+    #arg:
+  - cmd: (Get-ChildItem C:\Windows\Temp\ -Filter vmware-vmusr-*.log | ? {$_.LastWriteTime -lt (Get-Date).AddDays(-3660) -and -not $_.PSIsContainer} | Measure-Object).Count
+    #arg:
+  ## Delete 10 year old "-vmware-vmusr*" log files
+  - cmd: (Get-ChildItem C:\Windows\Temp\ -Filter vmware-vmusr-*.log | ? {$_.LastWriteTime -lt (Get-Date).AddDays(-3660) -and -not $_.PSIsContainer} | Remove-Item | Out-String).trim()
+    #arg:
+
+
+## Define "g_" variables in inventory "group_vars" for group specific values as needed.
+## The "g_" values are in addition to, not replacement of, the "a_" values
+#g_lin_cleanup_tools_local: []
+#g_win_cleanup_tools_local: []
+
+
+## Define "h_" variables in inventory "host_vars" for host specific values as needed.
+## The "h_" values are in addition to, not replacement of, the "a_" values and "g_" values
+#h_lin_cleanup_tools_local: []
+#h_win_cleanup_tools_local: []
+
+
+...
+

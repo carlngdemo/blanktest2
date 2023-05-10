@@ -1,0 +1,81 @@
+##
+## Author: Carl Ng
+## Created on: April 22, 2023
+##
+
+---
+
+## This includes delegate_to: localhost and run_once: yes at the end of block
+- name: block (CONTROL HOST). set global variables
+  block:
+    - name: set_fact (CONTROL HOST) run_once yes. Set base global variables
+      set_fact:
+        random_string: "{{ lookup('pipe', 'echo `date +%Y%m%d_%H%M%S`_`tr -dc a-z0-9 < /dev/urandom | head -c {{ random_string_length | default(5) }}`') }}"
+    - name: set_fact (CONTROL HOST) run_once yes. Set dependent variables - Include random_string {{ random_string }} in directory path
+      set_fact:
+        control_host_tmp_dir: /tmp/ansible_tmp_work_dir_{{ tower_job_id | default('abcd1234') }}_{{ random_string }}
+        lin_target_tmp_dir: /tmp/ansible_tmp_work_dir_{{ tower_job_id | default('abcd1234') }}_{{ random_string }}
+        win_target_tmp_dir: c:\temp\ansible_tmp_work_dir_{{ tower_job_id | default('abcd1234') }}_{{ random_string }}
+    - name: set_fact (CONTROL HOST) run_once yes. Set dependent variables - file full paths
+      set_fact:
+        outfile_disk_usage_report: "{{ control_host_tmp_dir }}/disk_usage_report{{ tower_job_id | default('') }}.txt"
+        outfile_file_deletion_report: "{{ control_host_tmp_dir }}/file_deletion_report{{ tower_job_id | default('') }}.csv"
+        outfile_mail_body_debug: "{{ control_host_tmp_dir }}/mail_body_debug{{ tower_job_id | default('') }}.txt"
+
+
+    ## REACHABLE host(s) in the PLAY
+    - name: "reachable host (for host in ansible_play_hosts_all)"
+      set_fact:
+        ANSIBLE_PLAY_HOSTS_REACHABLE: |
+          {% for host in ansible_play_hosts_all %}
+          {% if hostvars[host]['ansible_system'] is defined %}
+          {{ host }},reachable
+          {% endif %}
+          {% endfor %}
+
+    ## unREACHABLE host(s) in the PLAY
+    - name: "unreachable host (for host in ansible_play_hosts_all)"
+      set_fact:
+        ANSIBLE_PLAY_HOSTS_UNREACHABLE: |
+          {% for host in ansible_play_hosts_all %}
+          {% if hostvars[host]['ansible_system'] is not defined %}
+          {{ host }},unreachable
+          {% endif %}
+          {% endfor %}
+
+    - name: file (CONTROL HOST) run_once yes. Create tmp directory {{ control_host_tmp_dir }}
+      file:
+        path: "{{ control_host_tmp_dir }}"
+        state: directory
+
+    - name: "blockinfile (CONTROL HOST). Add lines to output file {{ outfile_file_deletion_report }}."
+      blockinfile:
+        state: present
+        insertafter: EOF
+        dest: "{{ outfile_file_deletion_report }}"
+        content: |
+          {{ INFO_HEADER }}
+          {{ ANSIBLE_PLAY_HOSTS_UNREACHABLE }}
+          {{ ANSIBLE_PLAY_HOSTS_REACHABLE }}
+        marker: "# {mark} localhost_file_deletion_report"
+        create: yes
+
+    - name: "lineinfile (CONTROL HOST). Remove marker lines from output file {{ outfile_file_deletion_report }}."
+      lineinfile:
+        state: absent
+        path: "{{ outfile_file_deletion_report }}"
+        regexp: 'localhost_file_deletion_report$'
+
+    - name: "lineinfile (CONTROL HOST). Remove blank lines from output file {{ outfile_file_deletion_report }}."
+      lineinfile:
+        state: absent
+        path: "{{ outfile_file_deletion_report }}"
+        regexp: '^$'
+
+  delegate_to: localhost
+  run_once: yes
+##^^ End of - name: block (CONTROL HOST). set global variables
+
+
+...
+

@@ -1,0 +1,24 @@
+---
+
+##
+## WARNING: This runs arbitrary commands
+##
+
+    - name: Win32NT (cleanup tool local). win_shell. run cleanup tool {{ item.cmd }} {{ item.arg | default('') }}
+      win_shell: "{{ item.cmd }} {{ item.arg | default('') }}"
+      register: file_op_result
+      ignore_errors: yes
+    #- debug:
+    #    var: file_op_result
+
+    - name: Win32NT (cleanup tool local). set_fact Add to INFO_DATA. cleanup_tool_local result
+      set_fact:
+        INFO_DATA: "{{ INFO_DATA }}\n{{ inventory_hostname }},reachable,{{ item.cmd }} {{ item.arg | default('') }},exited,{{ file_op_result.failed }},{{ file_op_result.rc }},\"{{ file_op_result.stdout_lines | flatten }}\""
+      when: MAIL_TO is defined
+
+## Too much in Win32NT stdout/stdout_lines
+#        INFO_DATA: "{{ INFO_DATA }}\n{{ inventory_hostname }},reachable,{{ item.cmd }} {{ item.arg | default('') }},exited,{{ file_op_result.failed }},{{ file_op_result.rc }},\"{{ file_op_result.stdout_lines | flatten }} {{ file_op_result.stderr_lines | flatten }}\""
+#
+
+...
+

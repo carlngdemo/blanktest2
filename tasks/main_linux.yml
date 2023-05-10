@@ -1,0 +1,47 @@
+##
+## Author: Carl Ng
+## Created on: April 14, 2023
+##
+
+---
+
+- name: Linux. shell. Get disk usage before cleanup
+  shell: |
+    echo "{{ inventory_hostname }}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
+    echo "{{ inventory_hostname }} disk usage BEFORE cleanup";
+    date;
+    df -lh;
+  register: disk_usage_before_cleanup
+  when: MAIL_TO is defined
+
+
+### Use block for become: yes
+- name: block (ssh Linux) for become yes
+  become: yes
+  block:
+
+    ## WARNING: This runs arbitrary commands
+    - name: Linux. include_tasks lin_cleanup_tools_local.yml. run local cleanup tools
+      include_tasks: lin_cleanup_tools_local.yml
+      loop: "{{ a_lin_cleanup_tools_local|default([]) + g_lin_cleanup_tools_local|default([]) + h_lin_cleanup_tools_local|default([]) }}"
+
+
+##^^ End of - name: block (ssh Linux) for become yes
+
+
+- name: Linux. shell. Get disk usage after cleanup
+  shell: |
+    echo "{{ inventory_hostname }} disk usage AFTER cleanup -----------------------------";
+    date;
+    df -lh;
+    echo "===================================================================================End of {{ inventory_hostname }}";
+  register: disk_usage_after_cleanup
+  when: MAIL_TO is defined
+
+#- name: Linux. debug
+#  debug:
+#    var: disk_usage_before_cleanup.stdout_lines + disk_usage_after_cleanup.stdout_lines
+#  when: MAIL_TO is defined
+
+...
+

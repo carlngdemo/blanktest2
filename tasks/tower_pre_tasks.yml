@@ -1,0 +1,45 @@
+##
+## Author: Carl Ng
+## Created on: April 13, 2023
+##
+
+---
+
+- name: "block (tower_job_id_tasks)."
+  delegate_to: localhost
+  run_once: yes
+  block:
+
+    #- set_fact:
+    #    lin_deny_delete_list: "{{ lin_vital_list | product(lin_suffixes) | map('join') }}"
+    #- set_fact:
+    #    win_deny_delete_list: "{{ win_vital_list | product(win_suffixes) | map('join') }}"
+
+    ### Use with_nested loops to combine vital_list and suffixes, when run on Ansible Tower where "product" map('join') filter does not work as expected
+    - name: reset variable
+      set_fact:
+        lin_deny_delete_list: []
+    - name: with_nested. set variable
+      set_fact:
+        lin_deny_delete_list: "{{ lin_deny_delete_list + [item.0 ~ item.1] }}"
+      with_nested:
+        - "{{ lin_vital_list }}"
+        - "{{ lin_suffixes }}"
+
+
+    - name: reset variable
+      set_fact:
+        win_deny_delete_list: []
+    - name: with_nested. set variable
+      set_fact:
+        win_deny_delete_list: "{{ win_deny_delete_list + [item.0 ~ item.1] }}"
+      with_nested:
+        - "{{ win_vital_list }}"
+        - "{{ win_suffixes }}"
+
+
+##^^ End of - name: "block (tower_job_id_tasks)."
+
+
+...
+

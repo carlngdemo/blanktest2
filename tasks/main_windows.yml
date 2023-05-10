@@ -1,0 +1,39 @@
+##
+## Author: Carl Ng
+## Created on: April 14, 2023
+##
+
+---
+
+    - name: Win32NT. win_shell. Get disk usage before cleanup
+      win_shell: |
+        echo "{{ inventory_hostname }}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
+        echo "{{ inventory_hostname }} disk usage BEFORE cleanup";
+        (Get-Date | Out-String).trim();
+        (Get-Volume | Sort DriveLetter | FT | Out-String).trim();
+      register: disk_usage_before_cleanup
+      when: MAIL_TO is defined
+
+
+    ## WARNING: This runs arbitrary commands
+    - name: "Win32NT. include_tasks win_cleanup_tools_local.yml. run local cleanup tools"
+      include_tasks: win_cleanup_tools_local.yml
+      loop: "{{ a_win_cleanup_tools_local|default([]) + g_win_cleanup_tools_local|default([]) + h_win_cleanup_tools_local|default([]) }}"
+
+
+    - name: Win32NT. win_shell. Get disk usage after cleanup
+      win_shell: |
+        echo "{{ inventory_hostname }} disk usage AFTER cleanup -----------------------------";
+        (Get-Date | Out-String).trim();
+        (Get-Volume | Sort DriveLetter | FT | Out-String).trim();
+        echo "===================================================================================End of {{ inventory_hostname }}";
+      register: disk_usage_after_cleanup
+      when: MAIL_TO is defined
+
+    #- name: Win32NT. debug
+    #  debug:
+    #    var: disk_usage_before_cleanup.stdout_lines + disk_usage_after_cleanup.stdout_lines
+    #  when: MAIL_TO is defined
+
+...
+

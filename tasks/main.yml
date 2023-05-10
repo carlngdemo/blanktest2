@@ -1,0 +1,59 @@
+##
+## Author: Carl Ng
+## Created on: March 30, 2023
+##
+
+---
+
+- name: setup. Do not bother next tasks unless at least one host is reachable.
+  setup:
+
+- name: Ansible Tower. include_tasks tower_pre_tasks.yml
+  include_tasks: tower_pre_tasks.yml
+  when: tower_job_id is defined
+
+
+### Initialize variables. Create tmp directories, etc.
+- include_tasks: main_10_pre_tasks.yml
+  when: MAIL_TO is defined
+
+
+- name: block. To ensure cleanup tmp directory at the end.
+  block:
+
+    #### target payload
+    - name: block. ssh Linux
+      include_tasks: main_linux.yml
+      when: ansible_connection is not defined or ansible_connection == "ssh" or ansible_connection == "local"
+      ## ansible_connection == "local" is needed for delegate_to: localhost
+
+
+    - name: block. winrm Win32NT
+      include_tasks: main_windows.yml
+      when: ansible_connection is defined and ansible_connection == "winrm"
+    ####^^^^ End of target payload
+
+
+    ### Sent email
+    - include_tasks: main_90_send_email.yml
+      when: MAIL_TO is defined
+
+
+  always:
+
+    - name: "file (CONTROL HOST). Delete tmp directory {{ control_host_tmp_dir }}."
+      delegate_to: localhost
+      run_once: yes
+      file:
+        path: "{{ control_host_tmp_dir }}"
+        state: absent
+      when: MAIL_TO is defined
+      tags:
+        - YES_CLEANUP
+
+
+##^^ End of block - name: block. To ensure cleanup tmp directory at the end.
+
+
+...
+

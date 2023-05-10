@@ -1,0 +1,57 @@
+##
+## Author: Carl Ng
+## Created on: March 30, 2023
+##
+
+---
+
+
+a_lin_test_dirs:
+  - /tmp/test_a_dir_deny_delete_dir
+  - /tmp/test_a_dir_simpleton_dir
+  - /tmp/test_a_dir_matchington_dir11
+  - /tmp/test_a_dir_matchington_dir22
+  - '/tmp/test_a_dir_backupper_dir'
+  - '/tmp/test_a_dir1_chronyd_servicer_dir'
+  - /tmp/test_a_dir2_chronyd_servicer_dir
+a_win_test_dirs:
+  - 'c:\temp\test_a_dir_dENY_dELETE_dir'
+  - c:\temp\test_a_dir_simpleton_dir
+  - c:\temp\test_a_dir_matchington_dir11
+  - c:\temp\test_a_dir_matchington_dir22
+  - 'c:\temp\test_a_dir_backupper_dir'
+  - 'c:\temp\test_a_dir1_w32time_servicer_dir'
+  - c:\temp\test_a_dir2_w32time_servicer_dir
+a_lin_test_files:
+  - '/tmp/test_a_file_deny_delete_file'
+  - /tmp/test_a_file_simpleton.txt
+  - /tmp/test_a_file_matchington11.txt
+  - /tmp/test_a_file_matchington22.txt
+  - '/tmp/test_a_file_backupper.txt'
+  - '/tmp/test_a_file1_chronyd_servicer.txt'
+  - /tmp/test_a_file2_chronyd_servicer.txt
+a_win_test_files:
+  - 'c:\temp\test_a_file_DEny_DElete_File'
+  - c:\temp\test_a_file_simpleton.txt
+  - c:\temp\test_a_file_matchington11.txt
+  - c:\temp\test_a_file_matchington22.txt
+  - 'c:\temp\test_a_file_backupper.txt'
+  - 'c:\temp\test_a_file1_w32time_servicer.txt'
+  - "c:\\temp\\test_a_file2_w32time_servicer.txt"
+
+## Define "g_" variables in inventory "group_vars" for group specific values as needed.
+## The "g_" values are in addition to, not replacement of, the "a_" values
+#g_lin_test_dirs: []
+#g_win_test_dirs:[]
+#g_lin_test_files:[]
+#g_win_test_files:[]
+
+## Define "h_" variables in inventory "host_vars" for host specific values as needed.
+## The "h_" values are in addition to, not replacement of, the "a_" values and "g_" values
+#h_lin_test_dirs:[]
+#h_win_test_dirs:[]
+#h_lin_test_files:[]
+#h_win_test_files:[]
+
+...
+

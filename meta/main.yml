@@ -1,0 +1,21 @@
+---
+dependencies: []
+
+galaxy_info:
+  author: Carl Ng
+  description: ""
+  company: ""
+  license: ""
+  min_ansible_version: 2.9
+  platforms:
+  - name: RHEL
+    versions:
+    - 6,7,8,9
+  - name: Windows
+    versions:
+    - 2022, 2019, 2016, 2012R2, 2012
+  galaxy_tags:
+    - disk_cleanup_delete_tools
+
+...
+

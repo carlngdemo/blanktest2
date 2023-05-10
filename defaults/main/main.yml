@@ -1,0 +1,109 @@
+##
+## Author: Carl Ng
+## Created on: March 30, 2023
+##
+
+---
+## MAIL variables: can be defined in --extra-vars.
+## These are place holders.
+MAIL_SUBJECT: "disk cleanup report"
+MAIL_SMTPHOST: smtp.please-use-valid-smtp-host-{{ random_string }}.com
+MAIL_FROM: no-reply-ansible@please-use-valid-email-address-{{ random_string }}.com
+#MAIL_TO_notes: "This variable is used to determine whether to send email. Send email only if defined"
+# MAIL_TO_notes: This variable's defining is also used to determine whether or not to create report files
+# (no need to create report files as attachment when no email to send).
+#MAIL_TO:
+#  #- '{{ tower_user_email | default("no_such_user@please-use-valid-email-address-{{ random_string }}.com") }}'
+#  #- some_user@please-use-valid-email-address-{{ random_string }}.com
+#  #- some_more_user@please-use-valid-email-address-{{ random_string }}.com
+MAIL_BODY: "Use set_fact: at runtime, run_once: yes, delegate_to: localhost"
+
+
+INFO_HEADER: "inventory_hostname,host_reachable,file_fullpath,file_deletion_changed,file_deletion_failed,file_state,file_comment"
+#INFO_DATA: "{{ inventory_hostname }} if reachable this is set to one of the _DATA_ variables at runtime, otherwise not used."
+INFO_DATA: "{{ inventory_hostname }},reachable,,,,,search_and_delete"
+
+
+## To protect vital directories from being deleted
+lin_vital_list:
+  - ''
+  - '/'
+  - '*'
+  - /bin
+  - /boot
+  - /dev
+  - /etc
+  - /home
+  - /lib
+  - /lib64
+  - /mnt
+  - /opt
+  - /root
+  - /run
+  - /sbin
+  - /srv
+  - /sys
+  - /tmp
+  - /usr
+  - /var
+  - /tmp/test_a_dir_deny_delete_dir
+  - '/tmp/test_a_file_deny_delete_file'
+  - /tmp/test_g_dir_deny_delete_dir
+  - '/tmp/test_g_file_deny_delete_file'
+  - /tmp/test_h_dir_deny_delete_dir
+  - '/tmp/test_h_file_deny_delete_file'
+lin_suffixes:
+  - ''
+  - '*'
+  - '/'
+  - '/*'
+lin_deny_delete_list: "{{ lin_vital_list | product(lin_suffixes) | map('join') }}"
+win_vital_list:
+  - ''
+  - '\'
+  - '*'
+  - 'c:'
+  - c:\windows
+  - c:\program files
+  - c:\program files (x86)
+  - c:\programdata
+  - c:\users
+  - 'd:'
+  - 'e:'
+  - 'f:'
+  - 'g:'
+  - 'h:'
+  - 'i:'
+  - 'j:'
+  - 'k:'
+  - 'l:'
+  - 'm:'
+  - 'n:'
+  - 'o:'
+  - 'p:'
+  - 'q:'
+  - 'r:'
+  - 's:'
+  - 't:'
+  - 'u:'
+  - 'v:'
+  - 'w:'
+  - 'x:'
+  - 'y:'
+  - 'z:'
+  - 'c:\temp\test_a_dir_deny_delete_dir'
+  - 'c:\temp\test_a_file_deny_delete_file'
+  - 'c:\temp\test_g_dir_deny_delete_dir'
+  - 'c:\temp\test_g_file_deny_delete_file'
+  - 'c:\temp\test_h_dir_deny_delete_dir'
+  - 'c:\temp\test_h_file_deny_delete_file'
+win_suffixes:
+  - ''
+  - '*'
+  - '\'
+  - '\*'
+win_deny_delete_list: "{{ win_vital_list | product(win_suffixes) | map('join') }}"
+
+
+...
+
